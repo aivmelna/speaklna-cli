@@ -1,10 +1,12 @@
-// 手写的 stdio MCP（换行分隔的 JSON-RPC）。只有 4 个工具，不值得为它带 SDK：npx 冷启动要快。
+// 手写的 stdio MCP（换行分隔的 JSON-RPC）。只有 5 个工具，不值得为它带 SDK：npx 冷启动要快。
 import readline from 'node:readline';
-import { callApp } from './client.js';
+import { callApp, saveApp } from './client.js';
 import { describe } from './format.js';
 import { CLIENT_NAME } from './extract.js';
 
-const VERSION = '1.1.0';
+const VERSION = '1.1.1';
+// 存 wav 最多等这么久就先回（Codex 的工具调用 60 s 超时），App 那头接着存
+export const SAVE_WAIT_MS = 50000;
 
 export const TOOLS = [
   {
@@ -15,6 +17,19 @@ export const TOOLS = [
       properties: {
         text: { type: 'string', description: 'The text to read aloud (up to 20000 characters).' },
         voice: { type: 'string', description: 'Optional voice id or name from the `voices` tool. Omit to use the user\'s configured voice.' },
+      },
+      required: ['text'],
+    },
+  },
+  {
+    name: 'save',
+    description: 'Save text as a WAV audio file spoken by Speaklna, without playing it. Use this ONLY when the user asks for an audio file (voice-over, "save this as audio", "导出成音频"). The file goes to ~/Music/Speaklna/ and the result gives its path; move or copy it if the user wants it elsewhere. Long texts may still be saving when this returns; the result then says where the file will appear.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        text: { type: 'string', description: 'The text to turn into speech (up to 20000 characters).' },
+        voice: { type: 'string', description: 'Optional voice id or name from the `voices` tool. Omit to use the user\'s configured voice.' },
+        name: { type: 'string', description: 'Optional file name without extension. Omit for a timestamped name.' },
       },
       required: ['text'],
     },
@@ -60,6 +75,13 @@ export function createMcpHandler(tx) {
         const a = params?.arguments ?? {};
         if (!TOOLS.some((t) => t.name === name)) return error(id, -32602, `Unknown tool: ${name}`);
         let fields = {};
+        if (name === 'save') {
+          if (typeof a.text !== 'string' || !a.text.trim()) return result(id, { content: [{ type: 'text', text: 'Nothing to save (empty text).' }], isError: true });
+          fields = { text: a.text, client };
+          for (const k of ['voice', 'name']) if (typeof a[k] === 'string' && a[k]) fields[k] = a[k];
+          const res = await saveApp(tx, fields, { waitMs: SAVE_WAIT_MS });
+          return result(id, { content: [{ type: 'text', text: describe('save', res) }], isError: !['ok', 'pending'].includes(res.status) });
+        }
         if (name === 'speak') {
           if (typeof a.text !== 'string' || !a.text.trim()) return result(id, { content: [{ type: 'text', text: 'Nothing to read (empty text).' }], isError: true });
           fields = { text: a.text, kind: 'active', client };

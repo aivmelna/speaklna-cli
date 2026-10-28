@@ -6,7 +6,14 @@ const ERR = {
   too_long: 'Text is too long (limit 20000 characters).',
   unknown_voice: 'Unknown voice. Run `speaklna voices` to see the available ones.',
   bad_request: 'The app rejected the request.',
+  busy: 'Speaklna is reading or saving something else right now; nothing was saved. Try again when it is done.',
+  interrupted: 'Saving stopped because the user started reading with ⌥T; nothing was saved. Try again.',
+  canceled: 'Saving was canceled; nothing was saved.',
+  engine: 'The speech engine failed; nothing was saved.',
+  write: 'Could not write the audio file; nothing was saved.',
 };
+
+const secs = (s) => `${Math.round((s ?? 0) * 10) / 10} s`;
 
 export function describe(op, res) {
   switch (res.status) {
@@ -21,9 +28,14 @@ export function describe(op, res) {
       if (r.result === 'muted') return 'Muted: the user is in a call, so nothing was spoken.';
       if (r.result === 'queued') return 'Queued; it will be read after the current one.';
       return 'Speaking.';
+    case 'save':
+      return res.status === 'pending'
+        ? `Still saving (long text). The WAV file will appear at ${r.path} when it is done.`
+        : `Saved ${secs(r.seconds)} of audio to ${r.path}`;
     case 'stop': return r.stopped ? `Stopped ${r.stopped} AI reading(s).` : 'Nothing from AI was playing.';
     case 'status':
-      return [`state: ${r.state}`, `speaking: ${r.speaking ?? 'nobody'}`, `muted: ${r.muted ? 'yes' + (r.muteReason ? ` (${r.muteReason})` : '') : 'no'}`, `queued: ${r.queued ?? 0}`].join('\n');
+      return [`state: ${r.state}`, `speaking: ${r.speaking ?? 'nobody'}`, `muted: ${r.muted ? 'yes' + (r.muteReason ? ` (${r.muteReason})` : '') : 'no'}`, `queued: ${r.queued ?? 0}`,
+        ...(r.saving ? [`saving: ${r.saving}`] : [])].join('\n');
     case 'voices':
       return (r.voices ?? []).map((v) => `${v.id === r.default ? '*' : ' '} ${v.name} (${v.id}, ${v.kind})`).join('\n') || 'No voices.';
   }
