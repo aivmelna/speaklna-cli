@@ -25,7 +25,7 @@ function fakeTx({ pingOk = true, installed = true, replies = {} } = {}) {
     async save(req, opts = {}) {
       log.push(req);
       if (!up) return { reply: null, done: null };
-      const reply = { v: 1, id: req.id, ok: true, result: 'saving', path: '/Users/x/Music/Speaklna/a.wav', ...(replies.save ?? {}) };
+      const reply = { v: 1, id: req.id, ok: true, result: 'saving', path: '/Users/x/Audio/a.wav', ...(replies.save ?? {}) };
       if (reply.ok === false) return { reply, done: null };
       opts.onProgress?.({ id: req.id, state: 'progress', segments: 1, seconds: 2 });
       log.push({ op: '__saveOpts', waitMs: opts.waitMs });
@@ -144,14 +144,14 @@ test('真进程：hook 不打印、退出码 0（Linux 上也静默）；say 在
 });
 
 test('MCP save：存完回路径；长文到点先回“还在存”；busy 变 isError', async () => {
-  const ok = fakeTx({ replies: { saveDone: (q) => ({ id: q.id, state: 'done', ok: true, path: '/Users/x/Music/Speaklna/hi.wav', seconds: 3.24 }) } });
+  const ok = fakeTx({ replies: { saveDone: (q) => ({ id: q.id, state: 'done', ok: true, path: '/Users/x/Audio/hi.wav', seconds: 3.24 }) } });
   let out = await session(ok, [
     { jsonrpc: '2.0', id: 1, method: 'initialize', params: { clientInfo: { name: 'claude-code' } } },
     { jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'save', arguments: { text: '你好', voice: 'Ava', name: 'hi' } } },
     { jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'save', arguments: { text: ' ' } } },
   ]);
   const by = Object.fromEntries(out.map((m) => [m.id, m])); // 并发处理，回的顺序不定
-  assert.match(by[2].result.content[0].text, /Saved 3.2 s of audio to \/Users\/x\/Music\/Speaklna\/hi\.wav/);
+  assert.match(by[2].result.content[0].text, /Saved 3.2 s of audio to \/Users\/x\/Audio\/hi\.wav/);
   assert.equal(by[2].result.isError, false);
   assert.equal(by[3].result.isError, true);
   const sv = ok.log.find((r) => r.op === 'save');
@@ -165,11 +165,16 @@ test('MCP save：存完回路径；长文到点先回“还在存”；busy 变 
   out = await session(fakeTx({ replies: { save: { ok: false, error: 'busy' } } }), [{ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'save', arguments: { text: 'x' } } }]);
   assert.equal(out[0].result.isError, true);
   assert.match(out[0].result.content[0].text, /busy|reading or saving/);
+
+  // 还没选存音频的文件夹（App 1.2 起）：isError，叫模型告诉用户选好再存
+  out = await session(fakeTx({ replies: { save: { ok: false, error: 'no_folder' } } }), [{ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'save', arguments: { text: 'x' } } }]);
+  assert.equal(out[0].result.isError, true);
+  assert.match(out[0].result.content[0].text, /No folder for saved audio.*save again/);
 });
 
 test('CLI save：路径打 stdout；-o 文件 / 目录挪过去；--json；存不成退出码 1', async () => {
   const dir = tmp();
-  const music = path.join(dir, 'Music'); fs.mkdirSync(music);
+  const music = path.join(dir, 'Chosen'); fs.mkdirSync(music); // App 里用户选的文件夹
   const saveDone = (q) => {
     const p = path.join(music, (q.name ?? 'Speaklna 1') + '.wav');
     fs.writeFileSync(p, 'RIFF');

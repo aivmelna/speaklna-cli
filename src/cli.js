@@ -9,7 +9,7 @@ const USAGE = `speaklna <command>
   say [opts] <text|->         speak one request
         --report --client X --session S --project P --voice V
   save [opts] <text|->        save the speech as a WAV file instead of playing it
-        -o FILE|DIR --voice V --name N --json   (default: ~/Music/Speaklna/)
+        -o FILE|DIR --voice V --name N --json   (default: the folder chosen in Speaklna › Connect AI)
   stop | status | voices      [--json]
   setup [family...]           wire MCP + turn-end hook + rules into AI tools  [--yes] [--dry-run]
   uninstall [family...]       remove exactly what setup added                 [--yes]

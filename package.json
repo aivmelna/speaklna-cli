@@ -1,6 +1,6 @@
 {
   "name": "speaklna",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Let AI coding tools (Claude Code, Codex, OpenCode, Grok Build, OpenClaw) talk through the Speaklna Mac app: MCP server, turn-end hooks and one-command setup.",
   "type": "module",
   "bin": { "speaklna": "bin/speaklna.js" },

@@ -25,7 +25,7 @@ export async function callApp(tx, op, fields = {}, { pingMs = 1500, readyMs = 15
 }
 
 /**
- * 存成 wav：App 生成完写进 ~/Music/Speaklna，回话只带路径。
+ * 存成 wav：App 生成完写进用户在 App 里选的文件夹（没选过回 no_folder，App 弹选择框），回话只带路径。
  * status: ok（reply.path 是存好的文件）| pending（waitMs 到了还在存，reply.path 是存好后的位置）| error | 同 callApp
  * onStart(id)：收下了（命令行拿它在 Ctrl-C 时取消）
  */

@@ -21,7 +21,7 @@ speaklna say "Hello"             # also: stop, status, voices (add --json)
 speaklna save "Hello" -o hello.wav   # speech to a WAV file, nothing is played
 ```
 
-`save` reads the text the same way as ⌥T (24 kHz mono 16-bit WAV). Without `-o` the file stays in `~/Music/Speaklna/` and its path is printed. Text can come from stdin with `-`. It needs Speaklna 1.1 (4) or later, runs only when the app is not already reading, and stops if you press ⌥T meanwhile; Ctrl-C cancels it. Exit code 1 when nothing was saved.
+`save` reads the text the same way as ⌥T (24 kHz mono 16-bit WAV). Without `-o` the file stays in the folder you chose in Speaklna (Connect AI › Saving Audio) and its path is printed. The first time, Speaklna asks you to choose that folder and nothing is saved; run it again after choosing. Text can come from stdin with `-`. It needs Speaklna 1.1 (4) or later, runs only when the app is not already reading, and stops if you press ⌥T meanwhile; Ctrl-C cancels it. Exit code 1 when nothing was saved.
 
 Notes:
 
@@ -40,7 +40,7 @@ License: MIT. Author: Aivmelna LLC.
 给 Mac 上的 AI 编程工具用的 Speaklna（本地朗读）命令行薄壳，支持 Claude Code、Codex、OpenCode、Grok Build、OpenClaw。
 
 - `speaklna mcp`：MCP 服务，工具 `speak` / `save` / `stop` / `status` / `voices`。
-- `speaklna save "文字" -o 文件.wav`：念法和 ⌥T 一样，存成 wav、不出声；不给 `-o` 就留在 `~/Music/Speaklna/`，打印路径。
+- `speaklna save "文字" -o 文件.wav`：念法和 ⌥T 一样，存成 wav、不出声；不给 `-o` 就留在你在 Speaklna 里选的文件夹（接入 AI › 存成音频），打印路径。第一次会先弹框让你选文件夹、这次不存，选好再跑一次。
 - `speaklna hook <工具>`：每轮结束的钩子，只念回复最后一行以 `🔊` 开头的报告句；密钥类内容会先抹掉；钩子不打印、不阻塞、退出码恒为 0。
 - `speaklna setup` / `uninstall`：把 MCP、钩子和“每轮结尾写一行 🔊”的规矩写进各家配置，卸载时删干净。
 

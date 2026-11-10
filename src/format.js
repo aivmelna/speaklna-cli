@@ -11,6 +11,7 @@ const ERR = {
   canceled: 'Saving was canceled; nothing was saved.',
   engine: 'The speech engine failed; nothing was saved.',
   write: 'Could not write the audio file; nothing was saved.',
+  no_folder: 'No folder for saved audio yet; nothing was saved. Speaklna is asking the user to choose one now (it can be changed later in Speaklna › Connect AI). Once a folder is chosen, save again.',
 };
 
 const secs = (s) => `${Math.round((s ?? 0) * 10) / 10} s`;

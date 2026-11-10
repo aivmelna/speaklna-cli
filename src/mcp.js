@@ -23,7 +23,7 @@ export const TOOLS = [
   },
   {
     name: 'save',
-    description: 'Save text as a WAV audio file spoken by Speaklna, without playing it. Use this ONLY when the user asks for an audio file (voice-over, "save this as audio", "导出成音频"). The file goes to ~/Music/Speaklna/ and the result gives its path; move or copy it if the user wants it elsewhere. Long texts may still be saving when this returns; the result then says where the file will appear.',
+    description: 'Save text as a WAV audio file spoken by Speaklna, without playing it. Use this ONLY when the user asks for an audio file (voice-over, "save this as audio", "导出成音频"). The file goes to the folder the user chose in Speaklna (Connect AI › Saving Audio) and the result gives its path; move or copy it if the user wants it elsewhere. If no folder has been chosen yet, Speaklna asks the user to pick one and nothing is saved: tell the user, then call save again after they have picked it. Long texts may still be saving when this returns; the result then says where the file will appear.',
     inputSchema: {
       type: 'object',
       properties: {
